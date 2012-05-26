@@ -31,15 +31,15 @@ But it is possible to use brute force approach to find solutions of this
 question. It is also the reason why I created this project. With an application,
 I got part of solutions below:
 
-Matrix size   Unique image number
-        2x2   1
-        3x3   2
-        4x4   9
-        5x5   33
-        6x6   192
-        7x7   1272
-        8x8   10182
-        9x9   90822
+    Matrix size   Unique image number
+            2x2   1
+            3x3   2
+            4x4   9
+            5x5   33
+            6x6   192
+            7x7   1272
+            8x8   10182
+            9x9   90822
 
 My computer is not so powerful for getting answers for larger grids up to today.
 During the experiments, I got other interesting findings that allow me go further.
