@@ -105,7 +105,7 @@ TODO List
 
 Other Documents
 ---------------
-I am also writing Wiki page about the question on https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix
+I am also writing Wiki page about the question on [Github Wiki] (https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix)
 
 References
 ----------
