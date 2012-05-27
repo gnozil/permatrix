@@ -106,3 +106,8 @@ TODO List
 Other Documents
 ---------------
 I am also writing Wiki page about the question on https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix
+
+References
+----------
+* [Euclidean Space] (http://www.euclideanspace.com/maths/algebra/matrix/orthogonal/rotation/index.htm)
+* [Wikipedia Rotation Metrix] (http://en.wikipedia.org/wiki/Rotation_matrix)
