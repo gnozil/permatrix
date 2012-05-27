@@ -102,4 +102,7 @@ TODO List
 * Add a ANT build script file
 * Add a simple GUI application launcher
 * Optimize performance in CPU and memory
-    
+
+Other Documents
+---------------
+I am also writing Wiki page about the question on https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix
