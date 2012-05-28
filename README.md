@@ -20,10 +20,13 @@ as "Permutation Selection".
 Then we will go to step 2 of this question.
 
 ### Step 2
-Each permutation selection forms an 2-D Image. While we found some image will
-equal to another one after 1 to 3 times 90 degree rotation. But some images
-keep unique even after rotations. The 2nd question is: How many unique images
-will be for a N x N grid with rotations applied?
+Each permutation selection forms an 2-D Image. While we found some images will
+equal to others after 1 to 3 times 90 degree rotation, some images keep unique
+even after rotations. (please see image files in results directory)
+If we discard all images which are just another image's rotation, then we'll
+get a set of images which no one could be derived from others by rotation in
+the same set, and we call these images are Unique Image. The 2nd question is:
+How many unique images will be for a N x N grid? 
 
 The answer is unknown to me for an arbitrary N.
 
@@ -81,7 +84,7 @@ in future.
 
 ### Step 5
 Is there any real world use of permutation selection, and are there other
-characteristics of symmetric or dispersed image?
+characteristics of it?
 
 At least, I found an imprinted image are very beautiful - it is symmetric.
 We may print a symmetric image on clothes, arrange floor bricks following
@@ -92,7 +95,7 @@ The Application
 I wrote the Java application to solve the question (for Step 1-3 up to 26 May 2012).
 I am not good at either mathematics or programming, so the application codes
 may look immature. It includes only several files that do generate permutation
-serial, find unique images in brute force way, and render out the results
+series, find unique images in brute force way, and render out the results
 by Java2D API. Up to now, the application's performance is not good enough. In
 my Lenovo ThinkPad T420 laptop, it can only process up to a 11x11 grid without
 graphics output.
@@ -105,12 +108,13 @@ The application has below function:
 * Accept several command line options for different behaviors
 * Divide the unique images to types of Sole, Twin and Quad
 
-The application requires Java 1.6. It was written and tested in Ubuntu Linux 11.10 AMD64
-version with Oracle JDK 1.6.0\_32 64-bit.
+The application requires Java 1.6. It was written and tested in Ubuntu Linux
+11.10 x86-64 system with Oracle JDK 1.6.0\_32 64-bit edition.
 
-The 'results' folder include several generated PNG files. One 'image\*.png' file include
-all unique images for a grid. One 'imprint\*.png' file include all unique image and their
-imprinted images.
+The 'results' folder include several generated PNG files. One 'image\*.png' file
+include all unique images for a grid. One 'imprint\*.png' file include all
+unique image and their imprinted images. One 'all\*.png' file include all
+original permutation selections for a grid.
 
 TODO List
 ---------
@@ -123,7 +127,7 @@ TODO List
 
 Other Documents
 ---------------
-I am also writing Wiki page about the question on [Github Wiki] (https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix)
+I am also writing Wiki pages about the question on [Github Wiki] (https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix)
 
 References
 ----------
