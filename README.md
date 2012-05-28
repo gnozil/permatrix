@@ -86,6 +86,7 @@ The application has below function:
 * Render Permutation Selections in Ascii format and 1-pixel PNG image
 * Imprint rotated images and render the final image in PNG
 * Accept several command line options for different behaviors
+* Divide the unique images to types of Sole, Twin and Quad
 
 The application requires Java 1.6. It was written and tested in Ubuntu Linux 11.10 AMD64
 version with Oracle JDK 1.6.0\_32 64-bit.
