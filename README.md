@@ -122,12 +122,13 @@ some images, although these PNG files are small in size, their image canvas is b
 
 TODO List
 ---------
-* Get final mathematical formula for number of unique, symmetric and dispersed image.
-* Check the uniqueness of imprinted images
-* Change PNG render approach for large image by multiple files
+* Get final mathematical formula for number of unique, sole, twin, quad and
+dispersed image.
+* Check uniqueness of imprinted images
+* Split large PNG image to multiple small one by modifying render approach
 * Add a ANT build script file
 * Add a simple GUI application launcher
-* Optimize performance in CPU and memory
+* Optimize performance for CPU and memory utilization
 
 Other Documents
 ---------------
