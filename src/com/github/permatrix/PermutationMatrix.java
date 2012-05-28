@@ -12,54 +12,94 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
 /**
+ * This class is to generate permutation matrix and find the unique ones in
+ * brute force approach.
  * 
  * @author gnozil@gmail.com
- *
+ * 
  */
 public class PermutationMatrix {
+	/**
+	 * the size of grid in PNG image
+	 */
 	private static final int GRID_SIZE = 17;
+
+	/**
+	 * the image margin
+	 */
 	private static final int MARGIN_SIZE = 20;
+
+	/**
+	 * dimension of the matrix. TODO, to avoid confusion with 3-D cube in future
+	 * , here keep to use 'size'
+	 */
 	private int size;
-	List<CompactImage> images;
+
+	/**
+	 * all permutation images
+	 */
+	TreeMap<Long, CompactImage> images;
+
+	/**
+	 * Count of Sole Image - keep same after rotations, Twin Image - have 1
+	 * sibling after rotation, and Quad Image - have 3 siblings after rotation
+	 */
+	int nSole, nTwin, nQuad;
 
 	public PermutationMatrix(int sz) {
 		size = sz;
-		images = new ArrayList<CompactImage>();
+		images = new TreeMap<Long, CompactImage>();
 	}
 
-	public List<CompactImage> getImages() {
-		return images;
+	public int count() {
+		return images.size();
 	}
 
+	/**
+	 * add a new image to permutation image list, while only for unique one
+	 * 
+	 * @param img
+	 * @return
+	 */
 	public boolean addUniqueImage(CompactImage img) {
 		boolean found = false;
 		CompactImage ri = img.clone();
 		for (int loop = 0; loop < 3; loop++) {
 			ri.rotateSelf();
-			for (CompactImage now : images) {
-				if (ri.equals(now)) {
-					found = true;
-					break;
-				}
-			}
-			if (found)
+			long hc = ri.imageKey();
+			if (images.containsKey(hc)) {
+				found = true;
+				CompactImage now = images.get(hc);
+				now.count++;
 				break;
+			}
 		}
 		if (!found) {
-			images.add(img);
+			images.put(img.imageKey(), img);
 		}
 		return !found;
 	}
 
+	/**
+	 * generate all images for this order of matrix
+	 * 
+	 * @param unique
+	 *            : true - only keep unique images
+	 *            : false - keep all images
+	 */
 	public void generate(boolean unique) {
 		DictOrderPermutator pc = new DictOrderPermutator(size);
 		images.clear();
+//		int progress = 0;
+//		long cnt = 0;
 		while (pc.hasNext()) {
 			int[] indices = pc.next();
 			CompactImage newImg = new CompactImage(size);
@@ -68,20 +108,33 @@ public class PermutationMatrix {
 				newImg.addDot(x++, y);
 			}
 			if (!unique) {
-				images.add(newImg);
+				images.put(newImg.imageKey(), newImg);
 			} else {
 				addUniqueImage(newImg);
 			}
+//			cnt++;
+//			progress++;
+//			if (progress == 1000) {
+//				System.out.println(cnt + ", " + images.size());
+//				progress = 0;
+//			}
 		}
 	}
 
 	public void visualize(PrintStream pw) {
-		for (CompactImage img : images) {
+		for (CompactImage img : images.values()) {
 			img.visualize(pw);
 			pw.println("---------------------");
 		}
 	}
 
+	/**
+	 * draw an image and its imprinted image side by side. the final PNG
+	 * graphics include all images of this matrix
+	 * 
+	 * @param pw
+	 *            : output some text messages in this PrintStream
+	 */
 	public void imprint(PrintStream pw) {
 		int symm = 0;
 		int disp = 0;
@@ -100,7 +153,7 @@ public class PermutationMatrix {
 		g2d.drawString(size + "x" + size + ": " + h, 20, 15);
 
 		int y = 0;
-		for (CompactImage img : images) {
+		for (CompactImage img : images.values()) {
 			img.visualize(MARGIN_SIZE, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE, g2d);
 			Collection<Dot> newImg = img.imprint();
 			visualize(newImg, size, MARGIN_SIZE + (size + 1) * GRID_SIZE, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE,
@@ -126,6 +179,50 @@ public class PermutationMatrix {
 		pw.println(set.toString() + " Symmetric:" + symm + ", Dispersed:" + disp);
 	}
 
+	/**
+	 * count for sole/twin/quad images from the set of all unique images
+	 */
+	private void countSTQ() {
+		for (CompactImage img : images.values()) {
+			switch (img.count) {
+			case 1:
+				nSole++;
+				break;
+			case 2:
+				nTwin++;
+				break;
+			case 4:
+				nQuad++;
+				break;
+			default:
+				// possible exception: when image key is too large to fit into
+				// Java long
+				System.out.println("Unexpected count: " + img.count + ", Hash = " + img.imageKey());
+
+			}
+		}
+
+		System.out.println("Sole: " + nSole + ", Half: " + nTwin + ", Quad: " + nQuad);
+		System.out.println("Sole + 2 * Twin + 4 * Quad = " + (nSole + 2 * nTwin + 4 * nQuad));
+		System.out.println("Sole + Twin + Quad = " + (nSole + nTwin + nQuad));
+	}
+
+	/**
+	 * draw a single image by its dot set
+	 * 
+	 * @param dots
+	 *            dots to draw
+	 * @param dim
+	 *            the order of the matrix
+	 * @param posX
+	 *            start x coordinate in canvas for drawing
+	 * @param posY
+	 *            start y coordinate in canvas for drawing
+	 * @param gridSize
+	 *            grid size
+	 * @param g2d
+	 *            the Java2D graphics device
+	 */
 	private void visualize(Collection<Dot> dots, int dim, int posX, int posY, int gridSize, Graphics2D g2d) {
 		int width = dim * gridSize + 1;
 		g2d.drawRect(posX, posY, width - 1, width - 1);
@@ -138,10 +235,13 @@ public class PermutationMatrix {
 		}
 	}
 
+	/**
+	 * draw all images in graphics canvas
+	 */
 	public void visualize() {
 		int cnt = images.size();
 
-		// calculate canvas size
+		// try to get a square canvas
 		int h = (int) Math.sqrt(cnt);
 		int w = h;
 		if (cnt != h * h) {
@@ -167,12 +267,13 @@ public class PermutationMatrix {
 		// draw each image
 		int x = 0;
 		int y = -1;
+		Iterator<CompactImage> iter = images.values().iterator();
 		for (int idx = 0; idx < cnt; idx++) {
 			x = idx % w;
 			if (x == 0) {
 				y++;
 			}
-			CompactImage cimg = images.get(idx);
+			CompactImage cimg = iter.next();
 			cimg.visualize(MARGIN_SIZE + (size + 1) * GRID_SIZE * x, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE, g2d);
 		}
 
@@ -185,6 +286,14 @@ public class PermutationMatrix {
 		}
 	}
 
+	/**
+	 * draw a set of dots in ascii graphics
+	 * 
+	 * @param dots
+	 *            the dots set to be drawed
+	 * @param dim
+	 *            the dimension of the matrix
+	 */
 	public static void visualize(Collection<Dot> dots, int dim) {
 		char[][] visual = new char[dim][dim];
 		for (int x = 0; x < dim; x++) {
@@ -240,6 +349,12 @@ public class PermutationMatrix {
 		System.out.println(text.toString());
 	}
 
+	/**
+	 * the main function
+	 * 
+	 * @param args
+	 *            command line options
+	 */
 	public static void main(String[] args) {
 		List<Boundary> matrixes = new ArrayList<Boundary>();
 
@@ -295,18 +410,18 @@ public class PermutationMatrix {
 			for (int m = boundary.getLow(); m <= boundary.getHigh(); m++) {
 				PermutationMatrix mx = new PermutationMatrix(m);
 				mx.generate(deducated);
+				mx.countSTQ();
 				if (graph) {
 					mx.visualize();
 				}
 				if (ascii) {
-					mx.visualize(System.out);
+					// mx.visualize(System.out);
 				}
 				if (imp) {
 					mx.imprint(System.out);
 				}
 				if (summary) {
-					List<CompactImage> imgs = mx.getImages();
-					System.out.println("get images of " + m + "! = " + imgs.size());
+					System.out.println("get images of " + m + "! = " + mx.count());
 				}
 			}
 		}

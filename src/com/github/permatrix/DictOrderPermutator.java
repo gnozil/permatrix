@@ -83,4 +83,24 @@ public class DictOrderPermutator {
 		}
 		return fact;
 	}
+	
+	/**
+	 * A test method of the permutation generator
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		DictOrderPermutator pc = new DictOrderPermutator(4);
+		while (pc.hasNext()) {
+			int[] dots = pc.next();
+			long hash = 0;
+			long poly = 1;
+			for (int x = 0; x < dots.length; x++) {
+				System.out.print(dots[x]);
+				hash += dots[x] * poly;
+				poly *= 11;
+
+			}
+			System.out.println(" => " + hash);
+		}
+	}
 }
