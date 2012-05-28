@@ -13,25 +13,25 @@ To be simple, the question can be described as below steps:
 On a square N x N grid, select exact N cells that satisfy condition: only
 one cell selected in same row and column. How many solutions will be?
 
-This answer is very simple: N!. It is actually a full permutation of N
+The answer is very simple: N!. It is actually a full permutation of N
 numbers and each solution is a Permutation Matrix. We call above selection
 as "Permutation Selection".
 
 Then we will go to step 2 of this question.
 
 ### Step 2
-Each permutation selection forms an 2-D Image. While we found an image will
+Each permutation selection forms an 2-D Image. While we found some image will
 equal to another one after 1 to 3 times 90 degree rotation. But some images
 keep unique even after rotations. The 2nd question is: How many unique images
-will be for a N x N grid?
+will be for a N x N grid with rotations applied?
 
-The answer is unknown to me up to today.
+The answer is unknown to me for an arbitrary N.
 
 But it is possible to use brute force approach to find solutions of this
 question. It is also the reason why I created this project. With an application,
 I got part of solutions below:
 
-    Matrix size     Factorial     Unique image number
+    Matrix size     All images    Unique images
             2x2     2             1
             3x3     6             2
             4x4     24            9
@@ -40,6 +40,8 @@ I got part of solutions below:
             7x7     5040          1272
             8x8     40320         10182
             9x9     362880        90822
+            10x10   3628800       908160
+            11x11   39916800      9980160
 
 My computer is not so powerful for getting answers for larger grids up to today.
 During the experiments, I got other interesting findings that allow me go further.
@@ -48,16 +50,31 @@ During the experiments, I got other interesting findings that allow me go furthe
 For an unique image, we could rotate it up to 3 times and imprint 3 rotated
 images into the original one. As a result, in an imprinted image, there will
 be N to 4N selected cells. For N cells case, we call the original image is a
-Symmetric Image. For 4N cells case, we call the original image is a
-Dispersed Image. Then I got the 3rd question: how many Symmetric Image and
-Dispersed Image for a N x N grid by permutation selection?
+Sole Image. For 4N cells case, we call the original image is a Dispersed Image.
+Then we got the 3rd question: how many Sole Image and Dispersed Image for a
+N x N matrix by permutation selection?
 
-The answer is unknown too. We would find a Symmetric Image only exists for
+In addition, we define another two kinds of Image:
+
+* Twin Image: we'll get another exact 1 different image with 3 rotations on a Twin Image.
+* Quad Image: we'll get another exact 3 different images with 3 rotations on a Quad Image.
+
+It is clear that a Dispersed Image is a special Quad Image.
+
+And we can also get a simple formula among number of Sole, Twin, and Quad image:
+
+    N! = Sole + 2 * Twin + 4 * Quad
+
+and
+
+    Unique Image Number = Sole + Twin + Quad
+
+The answer is unknown too. We would find a Sole Image only exists for
 N x N grid, when N = 4K or N = 4K+1, where K is an integer.
 
 ### Step 4
-Above "Permutation Selection" is in 2-D space, how about 3-D space? In 3-D
-space, the rotation is allowed by around X-Y, X-Z and Y-Z axis.
+Above "Permutation Selection" is in 2-D space, how about in 3-D space? where the
+rotation is allowed by around X-Y, X-Z and Y-Z axis.
 
 This question is totally open now, and is planned to be covered by my project
 in future.
@@ -82,8 +99,8 @@ graphics output.
 
 The application has below function:
 * Generate original Permutation Selections and find unique images for a specified grid.
-  Now the grid size must below than 20.
-* Render Permutation Selections in Ascii format and 1-pixel PNG image
+  Now the grid size must be below 20.
+* Render Permutation Selections in ASCII format and 1-pixel PNG image
 * Imprint rotated images and render the final image in PNG
 * Accept several command line options for different behaviors
 * Divide the unique images to types of Sole, Twin and Quad
@@ -111,4 +128,4 @@ I am also writing Wiki page about the question on [Github Wiki] (https://github.
 References
 ----------
 * [Euclidean Space] (http://www.euclideanspace.com/maths/algebra/matrix/orthogonal/rotation/index.htm)
-* [Wikipedia Rotation Metrix] (http://en.wikipedia.org/wiki/Rotation_matrix)
+* [Wikipedia Rotation Matrix] (http://en.wikipedia.org/wiki/Rotation_matrix)
