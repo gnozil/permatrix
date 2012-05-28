@@ -102,4 +102,12 @@ TODO List
 * Add a ANT build script file
 * Add a simple GUI application launcher
 * Optimize performance in CPU and memory
-    
+
+Other Documents
+---------------
+I am also writing Wiki page about the question on [Github Wiki] (https://github.com/gnozil/permatrix/wiki/Discuss-of-Permutation-Matrix)
+
+References
+----------
+* [Euclidean Space] (http://www.euclideanspace.com/maths/algebra/matrix/orthogonal/rotation/index.htm)
+* [Wikipedia Rotation Metrix] (http://en.wikipedia.org/wiki/Rotation_matrix)
