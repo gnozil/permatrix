@@ -54,7 +54,10 @@ Sole Image. For 4N cells case, we call the original image is a Dispersed Image.
 Then we got the 3rd question: how many Sole Image and Dispersed Image for a
 N x N matrix by permutation selection?
 
-In addition, we define another two kinds of Image:
+The answer is unknown too. We would find a Sole Image only exists for
+N x N grid, when N = 4K or N = 4K+1, where K is an integer.
+
+In addition, we can define another two kinds of Image:
 
 * Twin Image: we'll get another exact 1 different image with 3 rotations on a Twin Image.
 * Quad Image: we'll get another exact 3 different images with 3 rotations on a Quad Image.
@@ -68,9 +71,6 @@ And we can also get a simple formula among number of Sole, Twin, and Quad image:
 and
 
     Unique Image Number = Sole + Twin + Quad
-
-The answer is unknown too. We would find a Sole Image only exists for
-N x N grid, when N = 4K or N = 4K+1, where K is an integer.
 
 ### Step 4
 Above "Permutation Selection" is in 2-D space, how about in 3-D space? where the
@@ -94,7 +94,7 @@ I am not good at either mathematics or programming, so the application codes
 may look immature. It includes only several files that do generate permutation
 serial, find unique images in brute force way, and render out the results
 by Java2D API. Up to now, the application's performance is not good enough. In
-my Lenovo ThinkPad T420 laptop, it can only process up to a 9x9 grid without
+my Lenovo ThinkPad T420 laptop, it can only process up to a 11x11 grid without
 graphics output.
 
 The application has below function:
