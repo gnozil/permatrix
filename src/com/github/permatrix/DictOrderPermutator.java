@@ -5,7 +5,7 @@ public class DictOrderPermutator {
 	private long numLeft;
 	private long total;
 
-	// The number of permutations of n! can be very large, 
+	// The number of permutations of n! can be very large,
 	// even when n is as small as 20 --
 	// 20! = 2,432,902,008,176,640,000 and
 	// 21! is too big to fit into a Java long,
@@ -82,25 +82,5 @@ public class DictOrderPermutator {
 			fact *= i;
 		}
 		return fact;
-	}
-	
-	/**
-	 * A test method of the permutation generator
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		DictOrderPermutator pc = new DictOrderPermutator(4);
-		while (pc.hasNext()) {
-			int[] dots = pc.next();
-			long hash = 0;
-			long poly = 1;
-			for (int x = 0; x < dots.length; x++) {
-				System.out.print(dots[x]);
-				hash += dots[x] * poly;
-				poly *= 11;
-
-			}
-			System.out.println(" => " + hash);
-		}
 	}
 }

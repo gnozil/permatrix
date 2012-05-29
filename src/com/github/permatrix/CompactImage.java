@@ -1,11 +1,6 @@
 package com.github.permatrix;
 
 import java.awt.Graphics2D;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,27 +8,132 @@ import java.util.Collection;
 import java.util.List;
 import java.util.TreeSet;
 
-import javax.imageio.ImageIO;
+public class CompactImage {
+	public static enum ImageType {
+		SOLE, TWIN, QUAD, DISPERSED, UNKNOWN
+	}
 
-public class CompactImage implements Comparable<CompactImage> {
-	int[] dots;
-	int count;
+	/**
+	 * compacted dots set of this image
+	 */
+	private int[] dots;
+
+	/**
+	 * image key, should be unique and depends on dots
+	 */
 	private long key;
 
+	/**
+	 * the count of isomorphic images, only values are 1, 2, or 4
+	 */
+	private int nIsomorphic;
+
+	/**
+	 * image type that matches nIsomorphic
+	 */
+	private ImageType type;
+
+	private CompactImage parent;
+
+	/**
+	 * construct an image object only by matrix size
+	 * 
+	 * @param size
+	 *            the matrix size
+	 */
 	public CompactImage(int size) {
 		dots = new int[size];
-		count = 1;
+		nIsomorphic = 1;
 		key = -1;
 	}
 
+	/**
+	 * construct an image object by dots values
+	 * 
+	 * @param src
+	 *            the source dots
+	 */
+	public CompactImage(final int[] src) {
+		this(src.length);
+		System.arraycopy(src, 0, dots, 0, src.length);
+	}
+
+	/**
+	 * return the isomorphic count
+	 * 
+	 * @return the isomorphic count
+	 */
+	public int isomorphicCount() {
+		return nIsomorphic;
+	}
+
+	/**
+	 * increase the isomorphic count
+	 */
+	public void incIsomorphicCount() {
+		nIsomorphic++;
+	}
+
+	/**
+	 * return image type
+	 * 
+	 * @return image type enum
+	 */
+	public ImageType getType() {
+		return type;
+	}
+
+	/**
+	 * update image type according to the isomorphic count
+	 * 
+	 * @return updated image type
+	 */
+	public ImageType refreshType() {
+		switch (nIsomorphic) {
+		case 1:
+			type = ImageType.SOLE;
+			break;
+		case 2:
+			type = ImageType.TWIN;
+			break;
+		case 4:
+			type = ImageType.QUAD;
+			break;
+		default:
+			type = ImageType.UNKNOWN;
+		}
+		return type;
+	}
+
+	/**
+	 * add a new dot in image
+	 * 
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
+	 */
 	public void addDot(int x, int y) {
+		assert (x < dots.length);
+		assert (y < dots.length);
 		dots[x] = y;
 	}
 
+	/**
+	 * add a new Dot object in image
+	 * 
+	 * @param dot
+	 *            the Dot object
+	 */
 	public void addDot(Dot dot) {
 		dots[dot.getX()] = dot.getY();
 	}
 
+	/**
+	 * convert the compact representation to Dot set
+	 * 
+	 * @return a List of of Dot object
+	 */
 	public List<Dot> getDots() {
 		List<Dot> dl = new ArrayList<Dot>();
 		int dim = dots.length;
@@ -44,8 +144,9 @@ public class CompactImage implements Comparable<CompactImage> {
 	}
 
 	/**
-	 * create a new image that is the 90 degree rotation of the image   
-	 * @return
+	 * create a new image that is the 90 degree rotation of the image
+	 * 
+	 * @return the new rotated image
 	 */
 	public CompactImage rotate() {
 		int dim = dots.length;
@@ -74,10 +175,17 @@ public class CompactImage implements Comparable<CompactImage> {
 	}
 
 	/**
-	 * calculate an unique key for each image by using polynomial. 
-	 * @return
+	 * We choose 17 as prime number for polynomial function because large prime
+	 * number will lead the result is too big to fit into Java long. That is to
+	 * say, we only support up to 16x16 matrix.
 	 */
-	private static final int P_PRIME = 19;
+	private static final int P_PRIME = 17;
+
+	/**
+	 * calculate an unique key for each image by using polynomial function.
+	 * 
+	 * @return the image key in long.
+	 */
 	public long imageKey() {
 		if (key == -1) {
 			key = 0;
@@ -90,22 +198,11 @@ public class CompactImage implements Comparable<CompactImage> {
 		return key;
 	}
 
-	@Override
-	public int hashCode() {
-		return (int) key;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		CompactImage img = (CompactImage) obj;
-		return imageKey() == img.imageKey();
-	}
-
 	/**
 	 * Compare two Image by compare each dot, slowest method
 	 * 
 	 * @param img
-	 * @return True - when two images are equal; False - when two images are not
+	 * @return true - when two images are equal; false - when two images are not
 	 *         same
 	 */
 	public boolean compareWith(CompactImage img) {
@@ -122,6 +219,9 @@ public class CompactImage implements Comparable<CompactImage> {
 		return true;
 	}
 
+	/**
+	 * clone a new image base on this one
+	 */
 	public CompactImage clone() {
 		int dim = dots.length;
 		CompactImage ni = new CompactImage(dim);
@@ -131,7 +231,8 @@ public class CompactImage implements Comparable<CompactImage> {
 
 	/**
 	 * imprint 3 rotated images with original and put all dots in a collection.
-	 * @return
+	 * 
+	 * @return the imprinted dot set for this image
 	 */
 	public Collection<Dot> imprint() {
 		TreeSet<Dot> ts = new TreeSet<Dot>();
@@ -147,15 +248,15 @@ public class CompactImage implements Comparable<CompactImage> {
 
 	/**
 	 * draw the visual representation of the image in Ascii graphics
+	 * 
 	 * @param pw
+	 *            the PrintStream for accepting output
 	 */
 	public void visualize(PrintStream pw) {
 		int dim = dots.length;
 		char[][] visual = new char[dim][dim];
 		for (int x = 0; x < dim; x++) {
 			Arrays.fill(visual[x], '-');
-		}
-		for (int x = 0; x < dim; x++) {
 			visual[x][dots[x]] = '*';
 		}
 		for (int x = 0; x < dim; x++) {
@@ -167,47 +268,34 @@ public class CompactImage implements Comparable<CompactImage> {
 	}
 
 	/**
-	 * generate the PNG graphics representation of the image and save to file
-	 */
-	public void visualize() {
-		int dim = dots.length;
-		int width = dim * 17 + 1;
-		BufferedImage img = new BufferedImage(width, width, BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2d = img.createGraphics();
-		visualize(0, 0, 17, g2d);
-		try {
-			ImageIO.write(img, "jpeg", new FileOutputStream(new File("image" + dim + "x" + dim + "_" + hashCode() + ".jpg")));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		g2d.dispose();
-	}
-
-	/**
 	 * draw the graphic representation of the image in a graphic device
+	 * 
 	 * @param posX
+	 *            the start x position on canvas for drawing
 	 * @param posY
+	 *            the start y position on canvas for drawing
 	 * @param gridSize
+	 *            the grid size
 	 * @param g2d
+	 *            the underline graphics device
 	 */
 	public void visualize(int posX, int posY, int gridSize, Graphics2D g2d) {
 		int dim = dots.length;
 		int width = dim * gridSize + 1;
 		g2d.drawRect(posX, posY, width - 1, width - 1);
-		for (int step = dim - 1; step >= 0; step--) {
-			g2d.drawLine(posX, posY + step * gridSize, posX + width - 1, posY + step * gridSize);
-			g2d.drawLine(posX + step * gridSize, posY, posX + step * gridSize, posY + width - 1);
-		}
 		for (int x = 0; x < dim; x++) {
-			g2d.fillRect(posX + x * gridSize + 1, posY + dots[x] * gridSize + 1, gridSize - 1, gridSize - 1);
+			int xtg = x * gridSize;
+			g2d.drawLine(posX, posY + xtg, posX + width - 1, posY + xtg);
+			g2d.drawLine(posX + xtg, posY, posX + xtg, posY + width - 1);
+			g2d.fillRect(posX + xtg + 2, posY + dots[x] * gridSize + 2, gridSize - 3, gridSize - 3);
 		}
 	}
 
-	@Override
-	public int compareTo(CompactImage img) {
-		return (int)(key - img.key);
+	public CompactImage getParent() {
+		return parent;
 	}
-	
+
+	public void setParent(CompactImage ci) {
+		parent = ci;
+	}
 }

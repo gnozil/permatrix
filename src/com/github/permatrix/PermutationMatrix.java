@@ -11,11 +11,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.TreeMap;
 
 import javax.imageio.ImageIO;
 
@@ -27,405 +26,422 @@ import javax.imageio.ImageIO;
  * 
  */
 public class PermutationMatrix {
-	/**
-	 * the size of grid in PNG image
-	 */
-	private static final int GRID_SIZE = 17;
+    /**
+     * the size of grid in PNG image
+     */
+    private static final int GRID_SIZE = 17;
 
-	/**
-	 * the image margin
-	 */
-	private static final int MARGIN_SIZE = 20;
+    /**
+     * the image margin
+     */
+    private static final int MARGIN_SIZE = 20;
 
-	/**
-	 * dimension of the matrix. TODO, to avoid confusion with 3-D cube in future
-	 * , here keep to use 'size'
-	 */
-	private int size;
+    /**
+     * dimension of the matrix. TODO, to avoid confusion with 3-D cube in future
+     * , here keep to use 'size'
+     */
+    private int size;
 
-	/**
-	 * all permutation images
-	 */
-	TreeMap<Long, CompactImage> images;
+    /**
+     * all permutation images
+     */
+    HashMap<Long, CompactImage> images;
 
-	/**
-	 * Count of Sole Image - keep same after rotations, Twin Image - have 1
-	 * sibling after rotation, and Quad Image - have 3 siblings after rotation
-	 */
-	int nSole, nTwin, nQuad;
+    /**
+     * if above images are unique or not
+     */
+    private boolean deducted;
 
-	public PermutationMatrix(int sz) {
-		size = sz;
-		images = new TreeMap<Long, CompactImage>();
-	}
+    /**
+     * Count of Sole Image - keep same after rotations, Twin Image - have 1
+     * sibling after rotation, and Quad Image - have 3 siblings after rotation
+     */
+    int nSole, nTwin, nQuad;
 
-	public int count() {
-		return images.size();
-	}
+    public PermutationMatrix(int sz) {
+        size = sz;
+        images = new HashMap<Long, CompactImage>();
+    }
 
-	/**
-	 * add a new image to permutation image list, while only for unique one
-	 * 
-	 * @param img
-	 * @return
-	 */
-	public boolean addUniqueImage(CompactImage img) {
-		boolean found = false;
-		CompactImage ri = img.clone();
-		for (int loop = 0; loop < 3; loop++) {
-			ri.rotateSelf();
-			long hc = ri.imageKey();
-			if (images.containsKey(hc)) {
-				found = true;
-				CompactImage now = images.get(hc);
-				now.count++;
-				break;
-			}
-		}
-		if (!found) {
-			images.put(img.imageKey(), img);
-		}
-		return !found;
-	}
+    public int count() {
+        return images.size();
+    }
 
-	/**
-	 * generate all images for this order of matrix
-	 * 
-	 * @param unique
-	 *            : true - only keep unique images
-	 *            : false - keep all images
-	 */
-	public void generate(boolean unique) {
-		DictOrderPermutator pc = new DictOrderPermutator(size);
-		images.clear();
-//		int progress = 0;
-//		long cnt = 0;
-		while (pc.hasNext()) {
-			int[] indices = pc.next();
-			CompactImage newImg = new CompactImage(size);
-			int x = 0;
-			for (int y : indices) {
-				newImg.addDot(x++, y);
-			}
-			if (!unique) {
-				images.put(newImg.imageKey(), newImg);
-			} else {
-				addUniqueImage(newImg);
-			}
-//			cnt++;
-//			progress++;
-//			if (progress == 1000) {
-//				System.out.println(cnt + ", " + images.size());
-//				progress = 0;
-//			}
-		}
-	}
+    /**
+     * add a new image to permutation image list, while only for unique one
+     * 
+     * @param img
+     * @return
+     */
+    public boolean addUniqueImage(CompactImage img) {
+        boolean found = false;
+        CompactImage ri = img.clone();
+        for (int loop = 0; loop < 3; loop++) {
+            ri.rotateSelf();
+            long hc = ri.imageKey();
+            if (images.containsKey(hc)) {
+                found = true;
+                CompactImage now = images.get(hc);
+                now.incIsomorphicCount();
+                break;
+            }
+        }
+        if (!found) {
+            images.put(img.imageKey(), img);
+        }
+        return !found;
+    }
 
-	public void visualize(PrintStream pw) {
-		for (CompactImage img : images.values()) {
-			img.visualize(pw);
-			pw.println("---------------------");
-		}
-	}
+    /**
+     * generate all images for this order of matrix
+     * 
+     * @param unique
+     *            : true - only keep unique images : false - keep all images
+     */
+    public void generate(boolean unique, boolean verbose) {
+        deducted = unique;
+        DictOrderPermutator pc = new DictOrderPermutator(size);
+        images.clear();
+        int progress = 0;
+        long cnt = 0;
+        while (pc.hasNext()) {
+            int[] indices = pc.next();
+            CompactImage newImg = new CompactImage(indices);
+            if (!unique) {
+                images.put(newImg.imageKey(), newImg);
+            } else {
+                addUniqueImage(newImg);
+            }
+            if (verbose) {
+                cnt++;
+                progress++;
+                if (progress == 1000) {
+                    System.out.println(cnt + " -> " + images.size());
+                    progress = 0;
+                }
+            }
+        }
+        if (unique) {
+            // count for Sole, Twin and Quad image
+            for (CompactImage img : images.values()) {
+                switch (img.isomorphicCount()) {
+                case 1:
+                    nSole++;
+                    break;
+                case 2:
+                    nTwin++;
+                    break;
+                case 4:
+                    nQuad++;
+                    break;
+                default:
+                    System.err.println("Unexpected reference count: " + img.isomorphicCount() + ", Hash = " + img.imageKey());
+                }
+            }
+        }
+    }
 
-	/**
-	 * draw an image and its imprinted image side by side. the final PNG
-	 * graphics include all images of this matrix
-	 * 
-	 * @param pw
-	 *            : output some text messages in this PrintStream
-	 */
-	public void imprint(PrintStream pw) {
-		int symm = 0;
-		int disp = 0;
-		HashSet<Integer> set = new HashSet<Integer>();
-		int w = 2;
-		int h = images.size();
-		int imgWidth = (size * GRID_SIZE + 1) * w + (GRID_SIZE - 1) * (w - 1) + MARGIN_SIZE * 2;
-		int imgHeight = (size * GRID_SIZE + 1) * h + (GRID_SIZE - 1) * (h - 1) + MARGIN_SIZE * 2;
+    /**
+     * draw an image and its imprinted image side by side. the final PNG
+     * graphics include all images of this matrix
+     * 
+     * @param pw
+     *            : output some text messages in this PrintStream
+     */
+    public void imprint(PrintStream pw) {
+        int sole = 0;
+        int disp = 0;
 
-		// draw the canvas on image object
-		BufferedImage bimg = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_BYTE_BINARY);
-		Graphics2D g2d = bimg.createGraphics();
+        Graphics2D g2d = null;
 
-		g2d.drawRect(0, 0, imgWidth - 1, imgHeight - 1);
-		g2d.setFont(new Font("Dialog", Font.PLAIN, 10));
-		g2d.drawString(size + "x" + size + ": " + h, 20, 15);
+        int w = 2;
+        int h = images.size();
+        int imgWidth = (size * GRID_SIZE + 1) * w + (GRID_SIZE - 1) * (w - 1) + MARGIN_SIZE * 2;
+        int imgHeight = (size * GRID_SIZE + 1) * h + (GRID_SIZE - 1) * (h - 1) + MARGIN_SIZE * 2;
 
-		int y = 0;
-		for (CompactImage img : images.values()) {
-			img.visualize(MARGIN_SIZE, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE, g2d);
-			Collection<Dot> newImg = img.imprint();
-			visualize(newImg, size, MARGIN_SIZE + (size + 1) * GRID_SIZE, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE,
-					g2d);
-			set.add(Integer.valueOf(newImg.size()));
-			if (newImg.size() == size) {
-				g2d.drawString("Symmetric", MARGIN_SIZE, MARGIN_SIZE + (size + 1) * GRID_SIZE * y - 2);
-				symm++;
-			} else if (newImg.size() == size * 4) {
-				g2d.drawString("Dispersed", MARGIN_SIZE, MARGIN_SIZE + (size + 1) * GRID_SIZE * y - 2);
-				disp++;
-			}
-			y++;
-		}
-		try {
-			ImageIO.write(bimg, "png", new FileOutputStream(
-					new File("imprint-" + size + "x" + size + "_" + hashCode() + ".png")));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		pw.println(set.toString() + " Symmetric:" + symm + ", Dispersed:" + disp);
-	}
+        // draw the canvas on image object
+        BufferedImage bimg = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_BYTE_BINARY);
+        g2d = bimg.createGraphics();
 
-	/**
-	 * count for sole/twin/quad images from the set of all unique images
-	 */
-	private void countSTQ() {
-		for (CompactImage img : images.values()) {
-			switch (img.count) {
-			case 1:
-				nSole++;
-				break;
-			case 2:
-				nTwin++;
-				break;
-			case 4:
-				nQuad++;
-				break;
-			default:
-				// possible exception: when image key is too large to fit into
-				// Java long
-				System.out.println("Unexpected count: " + img.count + ", Hash = " + img.imageKey());
+        g2d.drawRect(0, 0, imgWidth - 1, imgHeight - 1);
+        g2d.setFont(new Font("Dialog", Font.PLAIN, 10));
+        g2d.drawString(size + "x" + size + ": " + h, 20, 15);
 
-			}
-		}
+        int y = 0;
+        for (CompactImage img : images.values()) {
+            Collection<Dot> idots = img.imprint();
+            int coordY = MARGIN_SIZE + (size + 1) * GRID_SIZE * y;
+            img.visualize(MARGIN_SIZE, coordY, GRID_SIZE, g2d);
+            visualize(idots, size, MARGIN_SIZE + (size + 1) * GRID_SIZE, coordY, GRID_SIZE, g2d);
+            if (idots.size() == size) {
+                g2d.drawString("Sole", MARGIN_SIZE, coordY - 2);
+                sole++;
+            } else if (idots.size() == size * 4) {
+                g2d.drawString("Dispersed", MARGIN_SIZE, coordY - 2);
+                disp++;
+            }
+            y++;
+        }
+        try {
+            ImageIO.write(bimg, "png", new FileOutputStream(new File("imprint-" + size + "x" + size + ".png")));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pw.println("Sole:" + sole + ", Dispersed:" + disp);
+    }
 
-		System.out.println("Sole: " + nSole + ", Half: " + nTwin + ", Quad: " + nQuad);
-		System.out.println("Sole + 2 * Twin + 4 * Quad = " + (nSole + 2 * nTwin + 4 * nQuad));
-		System.out.println("Sole + Twin + Quad = " + (nSole + nTwin + nQuad));
-	}
+    public void visualize(PrintStream pw) {
+        for (CompactImage img : images.values()) {
+            img.visualize(pw);
+            pw.println("---------------------");
+        }
+    }
 
-	/**
-	 * draw a single image by its dot set
-	 * 
-	 * @param dots
-	 *            dots to draw
-	 * @param dim
-	 *            the order of the matrix
-	 * @param posX
-	 *            start x coordinate in canvas for drawing
-	 * @param posY
-	 *            start y coordinate in canvas for drawing
-	 * @param gridSize
-	 *            grid size
-	 * @param g2d
-	 *            the Java2D graphics device
-	 */
-	private void visualize(Collection<Dot> dots, int dim, int posX, int posY, int gridSize, Graphics2D g2d) {
-		int width = dim * gridSize + 1;
-		g2d.drawRect(posX, posY, width - 1, width - 1);
-		for (int step = dim - 1; step >= 0; step--) {
-			g2d.drawLine(posX, posY + step * gridSize, posX + width - 1, posY + step * gridSize);
-			g2d.drawLine(posX + step * gridSize, posY, posX + step * gridSize, posY + width - 1);
-		}
-		for (Dot dot : dots) {
-			g2d.fillRect(posX + dot.x * gridSize + 1, posY + dot.y * gridSize + 1, gridSize - 1, gridSize - 1);
-		}
-	}
+    /**
+     * draw a single image by its dot set
+     * 
+     * @param dots
+     *            dots to draw
+     * @param dim
+     *            the order of the matrix
+     * @param posX
+     *            start x coordinate in canvas for drawing
+     * @param posY
+     *            start y coordinate in canvas for drawing
+     * @param gridSize
+     *            grid size
+     * @param g2d
+     *            the Java2D graphics device
+     */
+    private void visualize(Collection<Dot> dots, int dim, int posX, int posY, int gridSize, Graphics2D g2d) {
+        int width = dim * gridSize + 1;
+        g2d.drawRect(posX, posY, width - 1, width - 1);
+        for (int step = dim - 1; step >= 0; step--) {
+            g2d.drawLine(posX, posY + step * gridSize, posX + width - 1, posY + step * gridSize);
+            g2d.drawLine(posX + step * gridSize, posY, posX + step * gridSize, posY + width - 1);
+        }
+        for (Dot dot : dots) {
+            g2d.fillRect(posX + dot.x * gridSize + 2, posY + dot.y * gridSize + 2, gridSize - 3, gridSize - 3);
+        }
+    }
 
-	/**
-	 * draw all images in graphics canvas
-	 */
-	public void visualize() {
-		int cnt = images.size();
+    /**
+     * draw all images in graphics canvas
+     */
+    public void visualize() {
+        int cnt = images.size();
 
-		// try to get a square canvas
-		int h = (int) Math.sqrt(cnt);
-		int w = h;
-		if (cnt != h * h) {
-			if (cnt <= (h + 1) * h) {
-				w = h + 1;
-			} else {
-				w++;
-				h++;
-			}
-		}
+        // try to get a square canvas
+        int h = (int) Math.sqrt(cnt);
+        int w = h;
+        if (cnt != h * h) {
+            if (cnt <= (h + 1) * h) {
+                w = h + 1;
+            } else {
+                w++;
+                h++;
+            }
+        }
 
-		int imgWidth = (size * GRID_SIZE + 1) * w + (GRID_SIZE - 1) * (w - 1) + MARGIN_SIZE * 2;
-		int imgHeight = (size * GRID_SIZE + 1) * h + (GRID_SIZE - 1) * (h - 1) + MARGIN_SIZE * 2;
+        int imgWidth = (size * GRID_SIZE + 1) * w + (GRID_SIZE - 1) * (w - 1) + MARGIN_SIZE * 2;
+        int imgHeight = (size * GRID_SIZE + 1) * h + (GRID_SIZE - 1) * (h - 1) + MARGIN_SIZE * 2;
 
-		// draw the canvas on image object
-		BufferedImage img = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_BYTE_BINARY); // BufferedImage.TYPE_INT_RGB);
-		Graphics2D g2d = img.createGraphics();
+        // draw the canvas on image object
+        BufferedImage img = new BufferedImage(imgWidth, imgHeight, BufferedImage.TYPE_BYTE_BINARY); // BufferedImage.TYPE_INT_RGB);
+        Graphics2D g2d = img.createGraphics();
 
-		g2d.drawRect(0, 0, imgWidth - 1, imgHeight - 1);
-		g2d.setFont(new Font("Dialog", Font.PLAIN, 10));
-		g2d.drawString(size + "x" + size + ": " + cnt, 20, 15);
+        g2d.drawRect(0, 0, imgWidth - 1, imgHeight - 1);
+        g2d.setFont(new Font("Dialog", Font.PLAIN, 10));
+        g2d.drawString(size + "x" + size + ": " + cnt, 20, 15);
 
-		// draw each image
-		int x = 0;
-		int y = -1;
-		Iterator<CompactImage> iter = images.values().iterator();
-		for (int idx = 0; idx < cnt; idx++) {
-			x = idx % w;
-			if (x == 0) {
-				y++;
-			}
-			CompactImage cimg = iter.next();
-			cimg.visualize(MARGIN_SIZE + (size + 1) * GRID_SIZE * x, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE, g2d);
-		}
+        // draw each image
+        int x = 0;
+        int y = -1;
+        Iterator<CompactImage> iter = images.values().iterator();
+        for (int idx = 0; idx < cnt; idx++) {
+            x = idx % w;
+            if (x == 0) {
+                y++;
+            }
+            CompactImage cimg = iter.next();
+            cimg.visualize(MARGIN_SIZE + (size + 1) * GRID_SIZE * x, MARGIN_SIZE + (size + 1) * GRID_SIZE * y, GRID_SIZE, g2d);
+        }
 
-		try {
-			ImageIO.write(img, "png", new FileOutputStream(new File("image-" + size + "x" + size + "_" + hashCode() + ".png")));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+        try {
+            ImageIO.write(img, "png", new FileOutputStream(new File("image-" + size + "x" + size + ".png")));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * draw a set of dots in ascii graphics
-	 * 
-	 * @param dots
-	 *            the dots set to be drawed
-	 * @param dim
-	 *            the dimension of the matrix
-	 */
-	public static void visualize(Collection<Dot> dots, int dim) {
-		char[][] visual = new char[dim][dim];
-		for (int x = 0; x < dim; x++) {
-			Arrays.fill(visual[x], '-');
-		}
-		for (Dot dot : dots) {
-			visual[dot.x][dot.y] = '*';
-		}
-		for (int x = 0; x < dim; x++) {
-			for (int y = 0; y < dim; y++) {
-				System.out.print(visual[x][y] + " ");
-			}
-			System.out.println();
-		}
-	}
+    /**
+     * draw a set of dots in ascii graphics
+     * 
+     * @param dots
+     *            the dots set to be drawed
+     * @param dim
+     *            the dimension of the matrix
+     */
+    public static void visualize(Collection<Dot> dots, int dim) {
+        char[][] visual = new char[dim][dim];
+        for (int x = 0; x < dim; x++) {
+            Arrays.fill(visual[x], '-');
+        }
+        for (Dot dot : dots) {
+            visual[dot.x][dot.y] = '*';
+        }
+        for (int x = 0; x < dim; x++) {
+            for (int y = 0; y < dim; y++) {
+                System.out.print(visual[x][y] + " ");
+            }
+            System.out.println();
+        }
+    }
 
-	static class Boundary {
-		int low;
-		int high;
+    public void summary() {
+        System.out.println("Number of " + (deducted ? "unique" : "all") + " images for " + size + "x" + size + " matrix: "
+                + count());
+        if (deducted) {
+            System.out.println("Sole image: " + nSole);
+            System.out.println("Twin image: " + nTwin);
+            System.out.println("Quad image: " + nQuad);
+        }
+    }
 
-		public Boundary(int l, int h) {
-			low = l;
-			high = h;
-		}
+    /**
+     * This class is for handling command line options of matrix size
+     * 
+     * @author gnozil@gmail.com
+     */
+    static class Boundary {
+        int low;
+        int high;
 
-		public int getHigh() {
-			return high;
-		}
+        public Boundary(int l, int h) {
+            low = l;
+            high = h;
+        }
 
-		public int getLow() {
-			return low;
-		}
+        public int getHigh() {
+            return high;
+        }
 
-		public String toString() {
-			return "(" + low + "," + high + ")";
-		}
+        public int getLow() {
+            return low;
+        }
 
-	}
+        public String toString() {
+            return "(" + low + "," + high + ")";
+        }
+    }
 
-	public static void usage() {
-		StringBuffer text = new StringBuffer();
-		text.append("Usage: java " + PermutationMatrix.class.getName() + " [options] <matrix size boundary>\n");
-		text.append("	   6		1 matrixes(default)\n");
-		text.append("	   2,3,6	3 matrixes\n");
-		text.append("	   4-7		4 matrixes\n");
-		text.append("	   2,4-7,8	6 matrixes\n");
-		text.append("	-d			deducated image\n");
-		text.append("	-f			full image\n");
-		text.append("	-g			graphic image in png\n");
-		text.append("	-a			ascii image on screen\n");
-		text.append("	-i			imprit image\n");
-		text.append("	-s			summary information\n");
-		System.out.println(text.toString());
-	}
+    /**
+     * the main function
+     * 
+     * @param args
+     *            command line options
+     */
+    public static void main(String[] args) {
+        List<Boundary> matrixes = new ArrayList<Boundary>();
 
-	/**
-	 * the main function
-	 * 
-	 * @param args
-	 *            command line options
-	 */
-	public static void main(String[] args) {
-		List<Boundary> matrixes = new ArrayList<Boundary>();
+        boolean deducated = true;
+        boolean graph = false;
+        boolean ascii = true;
+        boolean imp = false;
+        boolean summary = true;
+        boolean verbose = false;
 
-		boolean full = false;
-		boolean deducated = true;
-		boolean graph = true;
-		boolean ascii = false;
-		boolean imp = false;
-		boolean summary = true;
+        int idx = 0;
+        while (idx < args.length) {
+            String arg = args[idx++];
+            if (arg.equals("-d")) {
+                deducated = true;
+            } else if (arg.equals("-f")) {
+                deducated = false;
+            } else if (arg.equals("-g")) {
+                graph = true;
+            } else if (arg.equals("-a")) {
+                ascii = true;
+            } else if (arg.equals("-i")) {
+                imp = true;
+            } else if (arg.equals("-s")) {
+                summary = true;
+            } else if (arg.equals("-v")) {
+                verbose = true;
+            } else if (arg.equals("-n")) {
+                ascii = false;
+                graph = false;
+            } else {
+                try {
+                    StringTokenizer st = new StringTokenizer(arg, ",");
+                    while (st.hasMoreTokens()) {
+                        String bd = st.nextToken();
+                        int dash = bd.indexOf("-");
+                        if (dash != -1) {
+                            int l = Integer.valueOf(bd.substring(0, dash));
+                            int h = Integer.valueOf(bd.substring(dash + 1));
+                            matrixes.add(new Boundary(l, h));
+                        } else {
+                            int n = Integer.valueOf(bd);
+                            matrixes.add(new Boundary(n, n));
+                        }
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("Argument error! Need matrix size");
+                }
+            }
+        }
 
-		int idx = 0;
-		while (idx < args.length) {
-			String arg = args[idx++];
-			if (arg.equals("-d")) {
-				deducated = true;
-				full = false;
-			} else if (arg.equals("-f")) {
-				full = true;
-				deducated = false;
-			} else if (arg.equals("-g")) {
-				graph = true;
-				ascii = false;
-			} else if (arg.equals("-a")) {
-				ascii = true;
-				graph = false;
-			} else if (arg.equals("-i")) {
-				imp = true;
-			} else if (arg.equals("-s")) {
-				summary = true;
-			} else {
-				StringTokenizer st = new StringTokenizer(arg, ",");
-				while (st.hasMoreTokens()) {
-					String bd = st.nextToken();
-					int dash = bd.indexOf("-");
-					if (dash != -1) {
-						int l = Integer.valueOf(bd.substring(0, dash));
-						int h = Integer.valueOf(bd.substring(dash + 1));
-						matrixes.add(new Boundary(l, h));
-					} else {
-						int n = Integer.valueOf(bd);
-						matrixes.add(new Boundary(n, n));
-					}
-				}
-			}
-		}
+        if (matrixes.size() == 0) {
+            usage();
+            System.exit(1);
+        }
 
-		if (matrixes.size() == 0) {
-			matrixes.add(new Boundary(6, 6));
-		}
+        long t1 = System.currentTimeMillis();
+        for (Boundary boundary : matrixes) {
+            for (int m = boundary.getLow(); m <= boundary.getHigh(); m++) {
+                PermutationMatrix mx = new PermutationMatrix(m);
+                mx.generate(deducated, verbose);
 
-		long t1 = System.currentTimeMillis();
-		for (Boundary boundary : matrixes) {
-			for (int m = boundary.getLow(); m <= boundary.getHigh(); m++) {
-				PermutationMatrix mx = new PermutationMatrix(m);
-				mx.generate(deducated);
-				mx.countSTQ();
-				if (graph) {
-					mx.visualize();
-				}
-				if (ascii) {
-					// mx.visualize(System.out);
-				}
-				if (imp) {
-					mx.imprint(System.out);
-				}
-				if (summary) {
-					System.out.println("get images of " + m + "! = " + mx.count());
-				}
-			}
-		}
-		long t2 = System.currentTimeMillis();
-		System.out.println("Used (milli-second): " + (t2 - t1));
-	}
+                if (graph) {
+                    mx.visualize();
+                }
+                if (ascii) {
+                    mx.visualize(System.out);
+                }
+                if (imp) {
+                    mx.imprint(System.out);
+                }
+                if (summary) {
+                    mx.summary();
+                }
+            }
+        }
+        long t2 = System.currentTimeMillis();
+        System.out.println("Elapsed (milli-second): " + (t2 - t1));
+    }
+
+    public static void usage() {
+        StringBuffer text = new StringBuffer();
+        text.append("Usage: java " + PermutationMatrix.class.getName() + " [options] <matrix size>\n");
+        text.append("  Matrix size format\n");
+        text.append("     6        1 matrixes: 6x6\n");
+        text.append("     2,3,6    3 matrixes: 2x2,3x3,6x6\n");
+        text.append("     4-7      4 matrixes: 4x4,5x5,6x6,7x7\n");
+        text.append("     2,4-7,9  6 matrixes: 2x2,4x4,5x5,6x6,7x7,9x9\n");
+        text.append("  Options\n");
+        text.append("    -d        deducated image\n");
+        text.append("    -f        all images without deducation\n");
+        text.append("    -g        visualize images in graphic and output a PNG file\n");
+        text.append("    -a        visualize images in ascii and output on screen\n");
+        text.append("    -n        turn off any visual output\n");
+        text.append("    -i        imprint images\n");
+        text.append("    -s        output summary information\n");
+        text.append("    -v        show matrix generation progress\n");
+        System.out.println(text.toString());
+    }
 }

@@ -102,8 +102,9 @@ my Lenovo ThinkPad T420 laptop, it can only process up to a 11x11 grid without
 graphics output.
 
 The application has below function:
-* Generate original Permutation Selections and find unique images for a specified grid.
-  Now the grid size must be below 20.
+* Generate original Permutation Selections and find unique images for a grid.
+  Now the grid size must be below 20. (With graphics PNG file output, it will run
+  into exeception for 9x9 and larger grid in my computer)
 * Render Permutation Selections in ASCII format and 1-pixel PNG image
 * Imprint rotated images and render the final image in PNG
 * Accept several command line options for different behaviors
