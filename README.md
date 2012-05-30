@@ -139,3 +139,5 @@ References
 ----------
 * [Euclidean Space] (http://www.euclideanspace.com/maths/algebra/matrix/orthogonal/rotation/index.htm)
 * [Wikipedia Rotation Matrix] (http://en.wikipedia.org/wiki/Rotation_matrix)
+* [Symmetric Group on Wikipedia] (http://en.wikipedia.org/wiki/Symmetric_group)
+* I posted a [question on Math Stack Exchange] (http://math.stackexchange.com/questions/151421/how-many-non-isomorphic-permutation-selections-are-on-an-arbitrary-n-x-n-square)
