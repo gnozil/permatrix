@@ -1,0 +1,25 @@
+The PNG file in this folder looks small in size, while the image canvas
+may be too large to display in normal image viewer application. Please
+see below image geometry information from Linux 'file' command.
+
+all-2x2.png:     PNG image data, 126 x 75, 1-bit grayscale, non-interlaced
+all-3x3.png:     PNG image data, 228 x 160, 1-bit grayscale, non-interlaced
+all-4x4.png:     PNG image data, 449 x 449, 1-bit grayscale, non-interlaced
+all-5x5.png:     PNG image data, 1146 x 1146, 1-bit grayscale, non-interlaced
+all-6x6.png:     PNG image data, 3237 x 3237, 1-bit grayscale, non-interlaced
+all-7x7.png:     PNG image data, 9680 x 9680, 1-bit grayscale, non-interlaced
+all-8x8.png:     PNG image data, 30777 x 30777, 1-bit grayscale, non-interlaced
+image-2x2.png:   PNG image data, 75 x 75, 1-bit grayscale, non-interlaced
+image-3x3.png:   PNG image data, 160 x 92, 1-bit grayscale, non-interlaced
+image-4x4.png:   PNG image data, 279 x 279, 1-bit grayscale, non-interlaced
+image-5x5.png:   PNG image data, 636 x 636, 1-bit grayscale, non-interlaced
+image-6x6.png:   PNG image data, 1690 x 1690, 1-bit grayscale, non-interlaced
+image-7x7.png:   PNG image data, 4920 x 4920, 1-bit grayscale, non-interlaced
+image-8x8.png:   PNG image data, 15477 x 15477, 1-bit grayscale, non-interlaced
+imprint-2x2.png: PNG image data, 126 x 75, 1-bit grayscale, non-interlaced
+imprint-3x3.png: PNG image data, 160 x 160, 1-bit grayscale, non-interlaced
+imprint-4x4.png: PNG image data, 194 x 789, 1-bit grayscale, non-interlaced
+imprint-5x5.png: PNG image data, 228 x 3390, 1-bit grayscale, non-interlaced
+imprint-6x6.png: PNG image data, 262 x 22872, 1-bit grayscale, non-interlaced
+imprint-7x7.png: PNG image data, 296 x 173016, 1-bit grayscale, non-interlaced
+imprint-8x8.png: PNG image data, 330 x 1557870, 1-bit grayscale, non-interlaced
