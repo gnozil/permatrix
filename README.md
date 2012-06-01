@@ -6,6 +6,11 @@ To explore mathematics characteristics of permutation matrix.
 Overview
 --------
 
+*Update 2012/5/31*
+This question is solved in Math Exchange Stack! Please go to 
+[question on Math Stack Exchange] (http://math.stackexchange.com/questions/151421/how-many-non-isomorphic-permutation-selections-are-on-an-arbitrary-n-x-n-square) for results!
+
+
 This project is to solve a mathematical question which has attracted me for
 years. To be simple, the question can be described by below steps:
 
